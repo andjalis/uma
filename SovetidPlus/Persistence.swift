@@ -1,13 +1,10 @@
 import CoreData
 
-/// Bootstraps the Core Data stack used throughout the application.
 final class PersistenceController {
     static let shared = PersistenceController()
 
     let container: NSPersistentContainer
 
-    /// Creates a new persistence controller optionally configured with an
-    /// in-memory store, which is handy for SwiftUI previews and tests.
     private init(inMemory: Bool = false) {
         let model = PersistenceController.managedObjectModel
         container = NSPersistentContainer(name: "BabySleepTracker", managedObjectModel: model)
@@ -26,7 +23,6 @@ final class PersistenceController {
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
     }
 
-    /// Programmatic managed object model describing the `SleepSession` entity.
     private static var managedObjectModel: NSManagedObjectModel = {
         let model = NSManagedObjectModel()
 

@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Sheet that allows the caregiver to record a historical sleep session.
 struct ManualEntryView: View {
     @Environment(\.dismiss) private var dismiss
     let onSave: (Date, Date) -> Bool
@@ -9,13 +8,7 @@ struct ManualEntryView: View {
     @State private var endDate: Date
     @State private var showValidationError = false
 
-    /// Creates a manual entry view with optional defaults and an `onSave`
-    /// callback that receives the chosen start and end times.
-    init(
-        initialStart: Date = Date().addingTimeInterval(-3600),
-        initialEnd: Date = Date(),
-        onSave: @escaping (Date, Date) -> Bool
-    ) {
+    init(initialStart: Date = Date().addingTimeInterval(-3600), initialEnd: Date = Date(), onSave: @escaping (Date, Date) -> Bool) {
         self.onSave = onSave
         _startDate = State(initialValue: initialStart)
         _endDate = State(initialValue: initialEnd)
@@ -27,7 +20,7 @@ struct ManualEntryView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Start time")
                         .font(.headline)
-                        .foregroundStyle(Color.primary.opacity(0.8))
+                        .foregroundStyle(.primary.opacity(0.8))
                     DatePicker("Start", selection: $startDate, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .labelsHidden()
@@ -38,7 +31,7 @@ struct ManualEntryView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("End time")
                         .font(.headline)
-                        .foregroundStyle(Color.primary.opacity(0.8))
+                        .foregroundStyle(.primary.opacity(0.8))
                     DatePicker("End", selection: $endDate, in: startDate...Date(), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .labelsHidden()
@@ -80,13 +73,13 @@ struct ManualEntryView: View {
             .navigationTitle("Add Sleep")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
         }
-        .onChange(of: startDate) { _, newValue in
+        .onChange(of: startDate) { newValue in
             if endDate < newValue {
                 endDate = newValue.addingTimeInterval(1800)
             }
             showValidationError = false
         }
-        .onChange(of: endDate) { _, _ in
+        .onChange(of: endDate) { _ in
             showValidationError = false
         }
     }

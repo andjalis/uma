@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 /// Landing screen that manages live sleep tracking, quick stats, and entry
@@ -93,7 +92,7 @@ struct ContentView: View {
         .onAppear {
             store.fetchSessions()
         }
-        .onChange(of: isSleeping) { _, newValue in
+        .onChange(of: isSleeping) { newValue in
             if newValue {
                 startGlow()
             } else {

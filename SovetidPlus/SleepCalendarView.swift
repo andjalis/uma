@@ -1,7 +1,5 @@
 import SwiftUI
 
-/// Calendar overview that visualizes daily totals and the sessions for a
-/// selected day.
 struct SleepCalendarView: View {
     @EnvironmentObject private var store: SleepStore
     @Environment(\.colorScheme) private var colorScheme
@@ -143,7 +141,7 @@ struct SleepCalendarView: View {
             VStack(spacing: 6) {
                 Text("\(calendar.component(.day, from: date))")
                     .font(.headline)
-                    .foregroundStyle(inCurrentMonth ? Color.primary : Color.secondary.opacity(0.4))
+                    .foregroundStyle(inCurrentMonth ? .primary : .secondary.opacity(0.4))
                 if hours > 0 {
                     Text(formattedDuration(total))
                         .font(.caption2)

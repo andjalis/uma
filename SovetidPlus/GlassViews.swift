@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Convenience modifier that wraps content in a blurred, glass-like surface.
 struct GlassBackground: ViewModifier {
     var cornerRadius: CGFloat = 20
     func body(content: Content) -> some View {
@@ -15,13 +14,11 @@ struct GlassBackground: ViewModifier {
 }
 
 extension View {
-    /// Applies the ``GlassBackground`` modifier with an optional corner radius.
     func glassBackground(cornerRadius: CGFloat = 20) -> some View {
         modifier(GlassBackground(cornerRadius: cornerRadius))
     }
 }
 
-/// UIKit-powered blur view used to mimic the iOS Control Center aesthetic.
 struct BlurView: UIViewRepresentable {
     var style: UIBlurEffect.Style
 
@@ -34,7 +31,6 @@ struct BlurView: UIViewRepresentable {
     }
 }
 
-/// Button style that subtly scales controls when pressed.
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
