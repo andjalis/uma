@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ManualEntryView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     let onSave: (Date, Date) -> Bool
 
     @State private var startDate: Date
@@ -18,10 +19,10 @@ struct ManualEntryView: View {
         NavigationStack {
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Start time")
+                    Text("Starttid")
                         .font(.headline)
                         .foregroundStyle(.primary.opacity(0.8))
-                    DatePicker("Start", selection: $startDate, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("Starttid", selection: $startDate, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .labelsHidden()
                 }
@@ -29,10 +30,10 @@ struct ManualEntryView: View {
                 .glassBackground()
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("End time")
+                    Text("Sluttid")
                         .font(.headline)
                         .foregroundStyle(.primary.opacity(0.8))
-                    DatePicker("End", selection: $endDate, in: startDate...Date(), displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("Sluttid", selection: $endDate, in: startDate...Date(), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .labelsHidden()
                 }
@@ -40,7 +41,7 @@ struct ManualEntryView: View {
                 .glassBackground()
 
                 if showValidationError {
-                    Text("End time must be after start time.")
+                    Text("Sluttid skal være efter starttid.")
                         .font(.footnote)
                         .foregroundStyle(.red)
                         .transition(.opacity)
@@ -55,23 +56,34 @@ struct ManualEntryView: View {
                         withAnimation { showValidationError = true }
                     }
                 } label: {
-                    Text("Save Session")
+                    Text("Gem registrering")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(
-                            LinearGradient(colors: [Color.indigo, Color.blue.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            LinearGradient(
+                                colors: [AppColors.buttonActiveTop, AppColors.buttonActiveBottom],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .foregroundStyle(.white)
-                        .shadow(color: .blue.opacity(0.4), radius: 12, x: 0, y: 6)
+                        .shadow(color: AppColors.buttonActiveBottom.opacity(0.4), radius: 12, x: 0, y: 6)
                 }
                 .buttonStyle(ScaleButtonStyle())
             }
             .padding(24)
-            .background(LinearGradient(colors: [Color(.secondarySystemBackground), Color(.systemBackground)], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea())
-            .navigationTitle("Add Sleep")
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .background(
+                LinearGradient(
+                    colors: backgroundGradientColors(),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            )
+            .navigationTitle("Tilføj søvn")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Annuller") { dismiss() } } }
         }
         .onChange(of: startDate) { newValue in
             if endDate < newValue {
@@ -81,6 +93,14 @@ struct ManualEntryView: View {
         }
         .onChange(of: endDate) { _ in
             showValidationError = false
+        }
+    }
+
+    private func backgroundGradientColors() -> [Color] {
+        if colorScheme == .dark {
+            return [AppColors.backgroundDarkTop, AppColors.backgroundDarkBottom]
+        } else {
+            return [AppColors.backgroundLightTop, AppColors.backgroundLightBottom]
         }
     }
 }

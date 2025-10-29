@@ -29,12 +29,15 @@ extension SleepSession {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute]
         formatter.unitsStyle = .short
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.calendar?.locale = Locale(identifier: "da_DK")
         return formatter.string(from: duration) ?? "--"
     }
 
     var formattedTimeRange: String {
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
+        timeFormatter.locale = Locale(identifier: "da_DK")
         return "\(timeFormatter.string(from: startDate)) – \(timeFormatter.string(from: endDate ?? Date()))"
     }
 }

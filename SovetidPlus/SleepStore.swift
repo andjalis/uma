@@ -38,10 +38,15 @@ final class SleepStore: ObservableObject {
             do {
                 let request: NSFetchRequest<SleepSession> = SleepSession.fetchRequest()
                 request.returnsObjectsAsFaults = false
-                self.sessions = try self.context.fetch(request)
+                let fetched = try self.context.fetch(request)
+                Task { @MainActor in
+                    self.sessions = fetched
+                }
             } catch {
                 print("Failed to fetch sessions: \(error)")
-                self.sessions = []
+                Task { @MainActor in
+                    self.sessions = []
+                }
             }
         }
     }

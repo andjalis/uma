@@ -8,11 +8,17 @@ struct SleepCalendarView: View {
     @State private var currentMonth: Date = Calendar.current.startOfMonth(for: Date())
     @State private var selectedDate: Date = Date()
 
-    private var calendar: Calendar { Calendar.current }
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = Locale(identifier: "da_DK")
+        calendar.firstWeekday = 2
+        return calendar
+    }
 
     private var monthTitle: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "LLLL yyyy"
+        formatter.locale = Locale(identifier: "da_DK")
         return formatter.string(from: currentMonth)
     }
 
@@ -38,14 +44,18 @@ struct SleepCalendarView: View {
             .padding(24)
         }
         .background(gradientBackground.ignoresSafeArea())
-        .navigationTitle("Sleep Calendar")
+        .navigationTitle("Søvnkalender")
         .toolbar(.visible, for: .navigationBar)
     }
 
     private var gradientBackground: LinearGradient {
-        let base = colorScheme == .dark ? Color.black : Color(.systemBackground)
-        let accent = colorScheme == .dark ? Color.blue.opacity(0.35) : Color.cyan.opacity(0.2)
-        return LinearGradient(colors: [accent, base], startPoint: .topLeading, endPoint: .bottomTrailing)
+        let colors: [Color]
+        if colorScheme == .dark {
+            colors = [AppColors.backgroundDarkTop, AppColors.backgroundDarkBottom]
+        } else {
+            colors = [AppColors.backgroundLightTop, AppColors.backgroundLightBottom]
+        }
+        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 
     private var header: some View {
@@ -100,12 +110,12 @@ struct SleepCalendarView: View {
             let daySessions = store.sessions(on: selectedDate)
             Text(formattedDate(selectedDate))
                 .font(.title3.weight(.semibold))
-            Text("Total sleep: \(formattedDuration(store.totalSleepDuration(on: selectedDate)))")
+            Text("Samlet søvn: \(formattedDuration(store.totalSleepDuration(on: selectedDate)))")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             if daySessions.isEmpty {
-                Text("No sleep sessions recorded.")
+                Text("Ingen registreringer fundet.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .padding()
@@ -149,8 +159,13 @@ struct SleepCalendarView: View {
                         .font(.caption2)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.cyan.opacity(0.25))
+                        .background(AppColors.accentSoft.opacity(0.6))
                         .clipShape(Capsule())
+                        .foregroundStyle(Color.primary)
+                        .overlay(
+                            Capsule()
+                                .stroke(AppColors.accent.opacity(0.4), lineWidth: 1)
+                        )
                 } else {
                     Circle()
                         .fill(Color.secondary.opacity(0.15))
@@ -162,9 +177,9 @@ struct SleepCalendarView: View {
             .glassBackground(cornerRadius: 18)
             .overlay(
                 RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color.cyan.opacity(isSelected ? 0.6 : 0), lineWidth: 2)
+                    .stroke(AppColors.accent.opacity(isSelected ? 0.6 : 0), lineWidth: 2)
             )
-            .shadow(color: isSelected ? Color.cyan.opacity(0.4) : .clear, radius: 12, x: 0, y: 6)
+            .shadow(color: isSelected ? AppColors.accent.opacity(0.35) : .clear, radius: 12, x: 0, y: 6)
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -199,12 +214,15 @@ struct SleepCalendarView: View {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = duration >= 3600 ? [.hour, .minute] : [.minute]
         formatter.unitsStyle = .abbreviated
-        return formatter.string(from: duration) ?? "0m"
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.calendar?.locale = Locale(identifier: "da_DK")
+        return formatter.string(from: duration) ?? "0 min"
     }
 
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMM d"
+        formatter.locale = Locale(identifier: "da_DK")
+        formatter.setLocalizedDateFormatFromTemplate("EEEE d. MMMM")
         return formatter.string(from: date)
     }
 }

@@ -2,17 +2,6 @@ import Combine
 import CoreData
 import SwiftUI
 
-private enum BabyPalette {
-    static let softBeige = Color(red: 0.97, green: 0.94, blue: 0.89)
-    static let warmSand = Color(red: 0.94, green: 0.87, blue: 0.78)
-    static let morningMist = Color(red: 0.86, green: 0.92, blue: 0.95)
-    static let paleSage = Color(red: 0.82, green: 0.9, blue: 0.82)
-    static let mutedSage = Color(red: 0.68, green: 0.79, blue: 0.72)
-    static let duskBlue = Color(red: 0.46, green: 0.59, blue: 0.7)
-    static let deepSage = Color(red: 0.43, green: 0.56, blue: 0.52)
-    static let eveningTeal = Color(red: 0.32, green: 0.48, blue: 0.5)
-}
-
 /// Landing screen that manages live sleep tracking, quick stats, and entry
 /// points into the calendar and manual logging flows.
 struct ContentView: View {
@@ -36,9 +25,9 @@ struct ContentView: View {
     private var gradientBackground: LinearGradient {
         let colors: [Color]
         if colorScheme == .dark {
-            colors = [BabyPalette.eveningTeal, BabyPalette.deepSage]
+            colors = [AppColors.backgroundDarkTop, AppColors.backgroundDarkBottom]
         } else {
-            colors = [BabyPalette.softBeige, BabyPalette.morningMist]
+            colors = [AppColors.backgroundLightTop, AppColors.backgroundLightBottom]
         }
         return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
@@ -46,6 +35,7 @@ struct ContentView: View {
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "da_DK")
         return formatter
     }
 
@@ -112,48 +102,63 @@ struct ContentView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: isSleeping ? [BabyPalette.deepSage, BabyPalette.eveningTeal] : [BabyPalette.morningMist, BabyPalette.paleSage],
+                            colors: buttonColors(isSleeping: isSleeping),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(width: size, height: size)
-                    .shadow(color: (isSleeping ? BabyPalette.deepSage : BabyPalette.mutedSage).opacity(0.35), radius: 34, x: 0, y: 26)
+                    .shadow(color: buttonShadow(isSleeping: isSleeping), radius: 34, x: 0, y: 26)
 
                 if isSleeping {
                     Circle()
-                        .stroke(BabyPalette.deepSage.opacity(0.45), lineWidth: 12)
+                        .stroke(ringColor(isSleeping: isSleeping), lineWidth: 12)
                         .frame(width: size + 44, height: size + 44)
                         .scaleEffect(animateGlow ? 1.12 : 0.94)
-                        .opacity(animateGlow ? 0.45 : 0.18)
+                        .opacity(animateGlow ? 0.55 : 0.25)
                         .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: animateGlow)
                 }
 
                 VStack(spacing: 14) {
                     Image(systemName: isSleeping ? "pause.fill" : "play.fill")
                         .font(.system(size: max(36, size * 0.16), weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.95))
-                    Text(isSleeping ? "Pause Nap" : "Start Nap")
+                        .foregroundStyle(Color.white)
+                    Text(isSleeping ? "Pause lur" : "Start lur")
                         .font(.system(size: max(28, size * 0.12), weight: .bold))
-                        .foregroundStyle(.white)
-                    Text(isSleeping ? "Snoozing softly" : "Ready for cuddles")
+                        .foregroundStyle(Color.white)
+                    Text(isSleeping ? "Babyen sover trygt" : "Klar til kram")
                         .font(.system(size: max(16, size * 0.07), weight: .medium))
-                        .foregroundStyle(.white.opacity(0.85))
+                        .foregroundStyle(Color.white.opacity(0.9))
                 }
             }
         }
         .buttonStyle(ScaleButtonStyle())
-        .accessibilityLabel(isSleeping ? "Stop nap" : "Start nap")
+        .accessibilityLabel(isSleeping ? "Stop lur" : "Start lur")
+    }
+
+    private func buttonColors(isSleeping: Bool) -> [Color] {
+        return isSleeping
+            ? [AppColors.buttonActiveTop, AppColors.buttonActiveBottom]
+            : [AppColors.buttonInactiveTop, AppColors.buttonInactiveBottom]
+    }
+
+    private func ringColor(isSleeping: Bool) -> Color {
+        return isSleeping ? AppColors.buttonActiveTop : AppColors.buttonInactiveTop
+    }
+
+    private func buttonShadow(isSleeping: Bool) -> Color {
+        let base = isSleeping ? AppColors.buttonActiveBottom : AppColors.buttonInactiveBottom
+        return base.opacity(0.6)
     }
 
     private var headerSubtitle: String {
-        isSleeping ? "Tap to pause when baby wakes" : "Tap when baby drifts off"
+        isSleeping ? "Tryk for at sætte på pause, når baby vågner" : "Tryk, når baby falder i søvn"
     }
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Baby Nap")
+                Text("Baby-lur")
                     .font(.largeTitle.weight(.bold))
                 Text(headerSubtitle)
                     .font(.subheadline)
@@ -169,7 +174,7 @@ struct ContentView: View {
                     .padding(14)
                     .background(
                         Circle()
-                            .fill(BabyPalette.morningMist.opacity(0.7))
+                            .fill(AppColors.accentSoft.opacity(0.85))
                     )
                     .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 6)
             }
@@ -181,25 +186,25 @@ struct ContentView: View {
         VStack(spacing: 8) {
             if let session = activeSession {
                 let elapsed = max(0, now.timeIntervalSince(session.startDate))
-                Text("Sleeping…")
+                Text("Sover…")
                     .font(.title2.weight(.semibold))
                     .foregroundStyle(.primary)
-                Text("Since \(timeFormatter.string(from: session.startDate))")
+                Text("Siden \(timeFormatter.string(from: session.startDate))")
                     .font(.headline)
                     .foregroundStyle(.secondary)
-                Text("Elapsed \(formattedDuration(elapsed))")
+                Text("Forløbet tid \(formattedDuration(elapsed))")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else if let last = lastCompletedSession, let endDate = last.endDate {
-                Text("Baby is awake")
+                Text("Baby er vågen")
                     .font(.title2.weight(.semibold))
-                Text("Last nap ended at \(timeFormatter.string(from: endDate))")
+                Text("Seneste lur sluttede kl. \(timeFormatter.string(from: endDate))")
                     .font(.headline)
                     .foregroundStyle(.secondary)
             } else {
-                Text("Ready for the next nap")
+                Text("Klar til næste lur")
                     .font(.title2.weight(.semibold))
-                Text("Tap start to begin tracking")
+                Text("Tryk start for at begynde registreringen")
                     .font(.headline)
                     .foregroundStyle(.secondary)
             }
@@ -211,19 +216,19 @@ struct ContentView: View {
 
     private var quickStats: some View {
         HStack(spacing: 20) {
-            statCard(title: "Today", value: formattedDuration(todayDuration), subtitle: "Total sleep")
-            statCard(title: "Sessions", value: "\(store.sessions(on: Date()).count)", subtitle: "Today")
+            statCard(title: "I dag", value: formattedDuration(todayDuration), subtitle: "Samlet søvn")
+            statCard(title: "Lure", value: "\(store.sessions(on: Date()).count)", subtitle: "I dag")
         }
     }
 
     private var recentSessionsView: some View {
         let sessions = Array(store.sessions.prefix(3))
         return VStack(alignment: .leading, spacing: 16) {
-            Text("Recent sessions")
+            Text("Seneste registreringer")
                 .font(.headline)
                 .foregroundStyle(.secondary)
             if sessions.isEmpty {
-                Text("No sessions yet. Start tracking to build history.")
+                Text("Ingen registreringer endnu. Start sporing for at opbygge historik.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding()
@@ -235,7 +240,7 @@ struct ContentView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(session.formattedTimeRange)
                                 .font(.headline)
-                            Text(session.isActive ? "In progress" : session.formattedDuration)
+                            Text(session.isActive ? "I gang" : session.formattedDuration)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -254,11 +259,11 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle.fill")
                     .font(.title2)
-                    .foregroundStyle(BabyPalette.deepSage)
+                    .foregroundStyle(AppColors.accent)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Add manually")
+                    Text("Tilføj manuelt")
                         .font(.headline)
-                    Text("Log a past sleep session")
+                    Text("Registrer en tidligere lur")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -305,7 +310,9 @@ struct ContentView: View {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = duration >= 3600 ? [.hour, .minute] : [.minute]
         formatter.unitsStyle = .abbreviated
-        return formatter.string(from: duration) ?? "0m"
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.calendar?.locale = Locale(identifier: "da_DK")
+        return formatter.string(from: duration) ?? "0 min"
     }
 }
 
