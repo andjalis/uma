@@ -21,6 +21,10 @@ final class PersistenceController {
             }
         }
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.shouldDeleteInaccessibleFaults = true
+        container.viewContext.undoManager = nil
+        container.viewContext.name = "viewContext"
     }
 
     private static var managedObjectModel: NSManagedObjectModel = {

@@ -8,19 +8,41 @@ final class SleepStore: ObservableObject {
 
     private let context: NSManagedObjectContext
     private let calendar: Calendar
+    private var contextObserver: NSObjectProtocol?
 
     init(context: NSManagedObjectContext, calendar: Calendar = .current) {
         self.context = context
         self.calendar = calendar
+        contextObserver = NotificationCenter.default.addObserver(
+            forName: .NSManagedObjectContextDidSave,
+            object: context,
+            queue: nil
+        ) { [weak self] _ in
+            guard let self else { return }
+            Task { @MainActor in
+                self.fetchSessions()
+            }
+        }
         fetchSessions()
     }
 
+    deinit {
+        if let observer = contextObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     func fetchSessions() {
-        do {
-            sessions = try context.fetch(SleepSession.fetchRequest())
-        } catch {
-            print("Failed to fetch sessions: \(error)")
-            sessions = []
+        context.perform { [weak self] in
+            guard let self else { return }
+            do {
+                let request: NSFetchRequest<SleepSession> = SleepSession.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                self.sessions = try self.context.fetch(request)
+            } catch {
+                print("Failed to fetch sessions: \(error)")
+                self.sessions = []
+            }
         }
     }
 
@@ -46,7 +68,8 @@ final class SleepStore: ObservableObject {
     }
 
     func addSession(start: Date, end: Date) -> Bool {
-        guard end > start else { return false }
+        let now = Date()
+        guard end > start, start <= now, end <= now else { return false }
         let session = SleepSession(context: context)
         session.id = UUID()
         session.startDate = start
@@ -58,13 +81,16 @@ final class SleepStore: ObservableObject {
 
     private func saveContext() {
         guard context.hasChanges else { return }
-        do {
-            try context.save()
-            fetchSessions()
-        } catch {
-            context.rollback()
-            print("Failed to save: \(error)")
-            fetchSessions()
+        context.perform { [weak self] in
+            guard let self else { return }
+            do {
+                try self.context.save()
+                self.fetchSessions()
+            } catch {
+                self.context.rollback()
+                print("Failed to save: \(error)")
+                self.fetchSessions()
+            }
         }
     }
 
