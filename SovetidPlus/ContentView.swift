@@ -1,5 +1,7 @@
 import SwiftUI
 
+/// Landing screen that manages live sleep tracking, quick stats, and entry
+/// points into the calendar and manual logging flows.
 struct ContentView: View {
     @EnvironmentObject private var store: SleepStore
     @Environment(\.colorScheme) private var colorScheme

@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreData
 
+/// Entry point that wires the Core Data stack into the SwiftUI environment.
 @main
 struct SovetidPlusApp: App {
     private let persistenceController: PersistenceController
