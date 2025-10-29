@@ -39,6 +39,7 @@ struct SleepCalendarView: View {
         }
         .background(gradientBackground.ignoresSafeArea())
         .navigationTitle("Sleep Calendar")
+        .toolbar(.visible, for: .navigationBar)
     }
 
     private var gradientBackground: LinearGradient {

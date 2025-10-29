@@ -2,6 +2,17 @@ import Combine
 import CoreData
 import SwiftUI
 
+private enum BabyPalette {
+    static let softBeige = Color(red: 0.97, green: 0.94, blue: 0.89)
+    static let warmSand = Color(red: 0.94, green: 0.87, blue: 0.78)
+    static let morningMist = Color(red: 0.86, green: 0.92, blue: 0.95)
+    static let paleSage = Color(red: 0.82, green: 0.9, blue: 0.82)
+    static let mutedSage = Color(red: 0.68, green: 0.79, blue: 0.72)
+    static let duskBlue = Color(red: 0.46, green: 0.59, blue: 0.7)
+    static let deepSage = Color(red: 0.43, green: 0.56, blue: 0.52)
+    static let eveningTeal = Color(red: 0.32, green: 0.48, blue: 0.5)
+}
+
 /// Landing screen that manages live sleep tracking, quick stats, and entry
 /// points into the calendar and manual logging flows.
 struct ContentView: View {
@@ -25,9 +36,9 @@ struct ContentView: View {
     private var gradientBackground: LinearGradient {
         let colors: [Color]
         if colorScheme == .dark {
-            colors = [Color.black, Color.blue.opacity(0.45)]
+            colors = [BabyPalette.eveningTeal, BabyPalette.deepSage]
         } else {
-            colors = [Color.cyan.opacity(0.35), Color(.systemBackground)]
+            colors = [BabyPalette.softBeige, BabyPalette.morningMist]
         }
         return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
@@ -40,42 +51,30 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                gradientBackground
-                    .ignoresSafeArea()
+            GeometryReader { proxy in
+                let safeInsets = proxy.safeAreaInsets
+                let availableHeight = proxy.size.height - safeInsets.top - safeInsets.bottom
+                let proposedSize = min(proxy.size.width * 0.7, availableHeight * 0.55)
+                let buttonDiameter = max(proposedSize, 240)
+                let bottomPadding = max(safeInsets.bottom + 24, 40)
 
-                VStack(spacing: 28) {
-                    Spacer()
+                ZStack {
+                    gradientBackground
+                        .ignoresSafeArea()
 
-                    sleepButton
-
-                    statusView
-
-                    quickStats
-
-                    recentSessionsView
-
-                    Spacer()
-
-                    manualEntryButton
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-                .padding(.top, 24)
-            }
-            .navigationTitle("Baby Sleep")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        SleepCalendarView()
-                    } label: {
-                        Image(systemName: "calendar")
-                            .font(.title3)
-                            .foregroundStyle(.primary)
-                            .padding(12)
-                            .background(BlurView(style: .systemThinMaterial))
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    VStack(spacing: 24) {
+                        header
+                        Spacer(minLength: 12)
+                        sleepButton(size: buttonDiameter)
+                        statusView
+                        quickStats
+                        recentSessionsView
+                        Spacer(minLength: 20)
+                        manualEntryButton
                     }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, bottomPadding)
+                    .padding(.top, safeInsets.top + 20)
                 }
             }
         }
@@ -104,45 +103,78 @@ struct ContentView: View {
         .task {
             if isSleeping { startGlow() }
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
 
-    private var sleepButton: some View {
+    private func sleepButton(size: CGFloat) -> some View {
         Button(action: toggleSleepState) {
             ZStack {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: isSleeping ? [Color.purple.opacity(0.9), Color.indigo] : [Color.cyan, Color.blue.opacity(0.7)],
+                            colors: isSleeping ? [BabyPalette.deepSage, BabyPalette.eveningTeal] : [BabyPalette.morningMist, BabyPalette.paleSage],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 220, height: 220)
-                    .shadow(color: (isSleeping ? Color.purple : Color.cyan).opacity(0.4), radius: 30, x: 0, y: 18)
+                    .frame(width: size, height: size)
+                    .shadow(color: (isSleeping ? BabyPalette.deepSage : BabyPalette.mutedSage).opacity(0.35), radius: 34, x: 0, y: 26)
 
                 if isSleeping {
                     Circle()
-                        .stroke(Color.purple.opacity(0.4), lineWidth: 12)
-                        .frame(width: 260, height: 260)
-                        .scaleEffect(animateGlow ? 1.15 : 0.95)
-                        .opacity(animateGlow ? 0.5 : 0.15)
+                        .stroke(BabyPalette.deepSage.opacity(0.45), lineWidth: 12)
+                        .frame(width: size + 44, height: size + 44)
+                        .scaleEffect(animateGlow ? 1.12 : 0.94)
+                        .opacity(animateGlow ? 0.45 : 0.18)
                         .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: animateGlow)
                 }
 
-                VStack(spacing: 12) {
+                VStack(spacing: 14) {
                     Image(systemName: isSleeping ? "pause.fill" : "play.fill")
-                        .font(.system(size: 32, weight: .semibold))
+                        .font(.system(size: max(36, size * 0.16), weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.95))
+                    Text(isSleeping ? "Pause Nap" : "Start Nap")
+                        .font(.system(size: max(28, size * 0.12), weight: .bold))
                         .foregroundStyle(.white)
-                    Text(isSleeping ? "Stop" : "Start")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(.white)
-                    Text("Sleep")
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.8))
+                    Text(isSleeping ? "Snoozing softly" : "Ready for cuddles")
+                        .font(.system(size: max(16, size * 0.07), weight: .medium))
+                        .foregroundStyle(.white.opacity(0.85))
                 }
             }
         }
         .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel(isSleeping ? "Stop nap" : "Start nap")
+    }
+
+    private var headerSubtitle: String {
+        isSleeping ? "Tap to pause when baby wakes" : "Tap when baby drifts off"
+    }
+
+    private var header: some View {
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Baby Nap")
+                    .font(.largeTitle.weight(.bold))
+                Text(headerSubtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SleepCalendarView()
+            } label: {
+                Image(systemName: "calendar")
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(Color.primary)
+                    .padding(14)
+                    .background(
+                        Circle()
+                            .fill(BabyPalette.morningMist.opacity(0.7))
+                    )
+                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 6)
+            }
+            .buttonStyle(ScaleButtonStyle())
+        }
     }
 
     private var statusView: some View {
@@ -222,7 +254,7 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle.fill")
                     .font(.title2)
-                    .foregroundStyle(Color.cyan)
+                    .foregroundStyle(BabyPalette.deepSage)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Add manually")
                         .font(.headline)
