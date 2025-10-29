@@ -21,24 +21,38 @@ struct ManualEntryView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Starttid")
                         .font(.headline)
-                        .foregroundStyle(.primary.opacity(0.8))
+                        .foregroundStyle(.primary.opacity(0.85))
                     DatePicker("Starttid", selection: $startDate, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .labelsHidden()
                 }
                 .padding()
-                .glassBackground()
+                .background(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.55 : 0.35))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Sluttid")
                         .font(.headline)
-                        .foregroundStyle(.primary.opacity(0.8))
+                        .foregroundStyle(.primary.opacity(0.85))
                     DatePicker("Sluttid", selection: $endDate, in: startDate...Date(), displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(.compact)
                         .labelsHidden()
                 }
                 .padding()
-                .glassBackground()
+                .background(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.55 : 0.35))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
 
                 if showValidationError {
                     Text("Sluttid skal være efter starttid.")
@@ -60,28 +74,15 @@ struct ManualEntryView: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(
-                            LinearGradient(
-                                colors: [AppColors.buttonActiveTop, AppColors.buttonActiveBottom],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .background(AppColors.buttonActive)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .foregroundStyle(.white)
-                        .shadow(color: AppColors.buttonActiveBottom.opacity(0.4), radius: 12, x: 0, y: 6)
+                        .shadow(color: AppColors.buttonActive.opacity(0.4), radius: 12, x: 0, y: 6)
                 }
                 .buttonStyle(ScaleButtonStyle())
             }
             .padding(24)
-            .background(
-                LinearGradient(
-                    colors: backgroundGradientColors(),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-            )
+            .background(backgroundColor().ignoresSafeArea())
             .navigationTitle("Tilføj søvn")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Annuller") { dismiss() } } }
         }
@@ -96,11 +97,11 @@ struct ManualEntryView: View {
         }
     }
 
-    private func backgroundGradientColors() -> [Color] {
+    private func backgroundColor() -> Color {
         if colorScheme == .dark {
-            return [AppColors.backgroundDarkTop, AppColors.backgroundDarkBottom]
+            return AppColors.backgroundDark
         } else {
-            return [AppColors.backgroundLightTop, AppColors.backgroundLightBottom]
+            return AppColors.backgroundLight
         }
     }
 }

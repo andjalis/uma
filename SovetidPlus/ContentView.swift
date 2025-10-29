@@ -22,14 +22,8 @@ struct ContentView: View {
         store.totalSleepDuration(on: Date())
     }
 
-    private var gradientBackground: LinearGradient {
-        let colors: [Color]
-        if colorScheme == .dark {
-            colors = [AppColors.backgroundDarkTop, AppColors.backgroundDarkBottom]
-        } else {
-            colors = [AppColors.backgroundLightTop, AppColors.backgroundLightBottom]
-        }
-        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+    private var solidBackground: Color {
+        colorScheme == .dark ? AppColors.backgroundDark : AppColors.backgroundLight
     }
 
     private var timeFormatter: DateFormatter {
@@ -49,11 +43,12 @@ struct ContentView: View {
                 let bottomPadding = max(safeInsets.bottom + 24, 40)
 
                 ZStack {
-                    gradientBackground
+                    solidBackground
                         .ignoresSafeArea()
+                    heroHighlight
 
                     VStack(spacing: 24) {
-                        header
+                        topBar
                         Spacer(minLength: 12)
                         sleepButton(size: buttonDiameter)
                         statusView
@@ -62,7 +57,7 @@ struct ContentView: View {
                         Spacer(minLength: 20)
                         manualEntryButton
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 28)
                     .padding(.bottom, bottomPadding)
                     .padding(.top, safeInsets.top + 20)
                 }
@@ -100,15 +95,13 @@ struct ContentView: View {
         Button(action: toggleSleepState) {
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: buttonColors(isSleeping: isSleeping),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(buttonColor(isSleeping: isSleeping))
                     .frame(width: size, height: size)
                     .shadow(color: buttonShadow(isSleeping: isSleeping), radius: 34, x: 0, y: 26)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.18), lineWidth: 1.2)
+                    )
 
                 if isSleeping {
                     Circle()
@@ -126,9 +119,6 @@ struct ContentView: View {
                     Text(isSleeping ? "Pause lur" : "Start lur")
                         .font(.system(size: max(28, size * 0.12), weight: .bold))
                         .foregroundStyle(Color.white)
-                    Text(isSleeping ? "Babyen sover trygt" : "Klar til kram")
-                        .font(.system(size: max(16, size * 0.07), weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.9))
                 }
             }
         }
@@ -136,47 +126,41 @@ struct ContentView: View {
         .accessibilityLabel(isSleeping ? "Stop lur" : "Start lur")
     }
 
-    private func buttonColors(isSleeping: Bool) -> [Color] {
-        return isSleeping
-            ? [AppColors.buttonActiveTop, AppColors.buttonActiveBottom]
-            : [AppColors.buttonInactiveTop, AppColors.buttonInactiveBottom]
+    private var heroHighlight: some View {
+        Circle()
+            .fill(AppColors.buttonActive.opacity(0.18))
+            .blur(radius: 120)
+            .scaleEffect(1.4)
+            .offset(x: -80, y: -120)
+            .ignoresSafeArea()
+    }
+
+    private func buttonColor(isSleeping: Bool) -> Color {
+        isSleeping ? AppColors.buttonActive : AppColors.buttonInactive
     }
 
     private func ringColor(isSleeping: Bool) -> Color {
-        return isSleeping ? AppColors.buttonActiveTop : AppColors.buttonInactiveTop
+        return isSleeping ? AppColors.buttonActive : AppColors.buttonInactive
     }
 
     private func buttonShadow(isSleeping: Bool) -> Color {
-        let base = isSleeping ? AppColors.buttonActiveBottom : AppColors.buttonInactiveBottom
-        return base.opacity(0.6)
+        let base = isSleeping ? AppColors.buttonActive : AppColors.buttonInactive
+        return base.opacity(0.5)
     }
 
-    private var headerSubtitle: String {
-        isSleeping ? "Tryk for at sætte på pause, når baby vågner" : "Tryk, når baby falder i søvn"
-    }
-
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Baby-lur")
-                    .font(.largeTitle.weight(.bold))
-                Text(headerSubtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+    private var topBar: some View {
+        HStack {
             Spacer()
             NavigationLink {
                 SleepCalendarView()
             } label: {
                 Image(systemName: "calendar")
                     .font(.title2.weight(.semibold))
-                    .foregroundStyle(Color.primary)
-                    .padding(14)
-                    .background(
-                        Circle()
-                            .fill(AppColors.accentSoft.opacity(0.85))
-                    )
-                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 6)
+                    .foregroundStyle(Color.white)
+                    .padding(16)
+                    .background(AppColors.accentSurface)
+                    .clipShape(Circle())
+                    .shadow(color: AppColors.accent.opacity(0.3), radius: 10, x: 0, y: 6)
             }
             .buttonStyle(ScaleButtonStyle())
         }
@@ -211,7 +195,14 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .glassBackground(cornerRadius: 28)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.55 : 0.35))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
     }
 
     private var quickStats: some View {
@@ -233,7 +224,14 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .glassBackground(cornerRadius: 24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.55 : 0.35))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    )
             } else {
                 VStack(spacing: 12) {
                     ForEach(sessions, id: \.objectID) { session in
@@ -245,7 +243,14 @@ struct ContentView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .padding()
-                        .glassBackground(cornerRadius: 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.55 : 0.35))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        )
                     }
                 }
             }
@@ -256,21 +261,23 @@ struct ContentView: View {
         Button {
             showManualEntry = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
                 Image(systemName: "plus.circle.fill")
                     .font(.title2)
-                    .foregroundStyle(AppColors.accent)
+                    .foregroundStyle(Color.white)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Tilføj manuelt")
                         .font(.headline)
                     Text("Registrer en tidligere lur")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white.opacity(0.85))
                 }
                 Spacer()
             }
             .padding()
-            .glassBackground(cornerRadius: 24)
+            .background(AppColors.accentSurface)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: AppColors.accent.opacity(0.4), radius: 16, x: 0, y: 10)
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -279,16 +286,23 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.white.opacity(0.8))
             Text(value)
                 .font(.title2.weight(.bold))
+                .foregroundStyle(Color.white)
             Text(subtitle)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.white.opacity(0.85))
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .glassBackground(cornerRadius: 24)
+        .background(AppColors.softCardSurface.opacity(colorScheme == .dark ? 0.8 : 0.9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: AppColors.buttonInactive.opacity(0.25), radius: 12, x: 0, y: 8)
     }
 
     private func toggleSleepState() {

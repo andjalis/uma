@@ -43,19 +43,13 @@ struct SleepCalendarView: View {
             }
             .padding(24)
         }
-        .background(gradientBackground.ignoresSafeArea())
+        .background(backgroundColor.ignoresSafeArea())
         .navigationTitle("Søvnkalender")
         .toolbar(.visible, for: .navigationBar)
     }
 
-    private var gradientBackground: LinearGradient {
-        let colors: [Color]
-        if colorScheme == .dark {
-            colors = [AppColors.backgroundDarkTop, AppColors.backgroundDarkBottom]
-        } else {
-            colors = [AppColors.backgroundLightTop, AppColors.backgroundLightBottom]
-        }
-        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+    private var backgroundColor: Color {
+        colorScheme == .dark ? AppColors.backgroundDark : AppColors.backgroundLight
     }
 
     private var header: some View {
@@ -79,7 +73,14 @@ struct SleepCalendarView: View {
             .buttonStyle(ScaleButtonStyle())
         }
         .padding()
-        .glassBackground()
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.6 : 0.4))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
     }
 
     private var weekdayHeader: some View {
@@ -120,7 +121,14 @@ struct SleepCalendarView: View {
                     .foregroundStyle(.secondary)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .glassBackground(cornerRadius: 24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.6 : 0.4))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    )
             } else {
                 VStack(spacing: 12) {
                     ForEach(daySessions, id: \.objectID) { session in
@@ -132,7 +140,14 @@ struct SleepCalendarView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .padding()
-                        .glassBackground(cornerRadius: 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.6 : 0.4))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        )
                     }
                 }
             }
@@ -159,12 +174,12 @@ struct SleepCalendarView: View {
                         .font(.caption2)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(AppColors.accentSoft.opacity(0.6))
+                        .background(AppColors.softCardSurface.opacity(colorScheme == .dark ? 0.75 : 0.6))
                         .clipShape(Capsule())
                         .foregroundStyle(Color.primary)
                         .overlay(
                             Capsule()
-                                .stroke(AppColors.accent.opacity(0.4), lineWidth: 1)
+                                .stroke(AppColors.accent.opacity(0.35), lineWidth: 1)
                         )
                 } else {
                     Circle()
@@ -174,7 +189,10 @@ struct SleepCalendarView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
-            .glassBackground(cornerRadius: 18)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(AppColors.accentSurface.opacity(colorScheme == .dark ? 0.55 : 0.35))
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(AppColors.accent.opacity(isSelected ? 0.6 : 0), lineWidth: 2)
