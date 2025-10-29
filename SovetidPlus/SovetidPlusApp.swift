@@ -1,17 +1,24 @@
-//
-//  SovetidPlusApp.swift
-//  SovetidPlus
-//
-//  Created by Andjalis on 29/10/2025.
-//
-
 import SwiftUI
+import CoreData
 
+/// Entry point that wires the Core Data stack into the SwiftUI environment.
 @main
 struct SovetidPlusApp: App {
+    private let persistenceController: PersistenceController
+    @StateObject private var store: SleepStore
+
+    init() {
+        let persistenceController = PersistenceController.shared
+        self.persistenceController = persistenceController
+        let context = persistenceController.container.viewContext
+        _store = StateObject(wrappedValue: SleepStore(context: context))
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(store)
         }
     }
 }
