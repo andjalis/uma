@@ -1,3 +1,4 @@
+import CoreData
 import SwiftUI
 
 struct SleepCalendarView: View {
@@ -141,7 +142,7 @@ struct SleepCalendarView: View {
             VStack(spacing: 6) {
                 Text("\(calendar.component(.day, from: date))")
                     .font(.headline)
-                    .foregroundStyle(inCurrentMonth ? .primary : .secondary.opacity(0.4))
+                    .foregroundStyle(inCurrentMonth ? Color.primary : Color.secondary.opacity(0.4))
                 if hours > 0 {
                     Text(formattedDuration(total))
                         .font(.caption2)
